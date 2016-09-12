@@ -17,7 +17,7 @@ public class FileManager {
     }
 
     public ArrayList<String> readFile() throws IOException {
-        BufferedReader bufferedReader = new BufferedReader(new FileReader("C:/Users/SeongJung/Desktop/STUDY/컴파일러/2016_fall_compiler/week01/src/translator/test.ad"));
+        BufferedReader bufferedReader = new BufferedReader(new FileReader(new File("week01/src/translator/test.ad")));
         ArrayList<String> statementSet = new ArrayList<>();
         while(true) {
             String line = bufferedReader.readLine();
@@ -30,22 +30,22 @@ public class FileManager {
     }
 
     public void outputfileInitializer() throws IOException {
-        FileOutputStream output = new FileOutputStream("C:/Users/SeongJung/Desktop/STUDY/컴파일러/2016_fall_compiler/week01/src/translator/test.c");
+        FileOutputStream output = new FileOutputStream(new File("week01/src/translator/test.c"));
         output.close();
-        FileWriter fileWriter = new FileWriter("C:/Users/SeongJung/Desktop/STUDY/컴파일러/2016_fall_compiler/week01/src/translator/test.c");
+        FileWriter fileWriter = new FileWriter(new File("week01/src/translator/test.c"));
         fileWriter.write("#include <stdio.h>\r\n\r\n" +
                 "int main() {\r\n");
         fileWriter.close();
     }
 
     public void outputfileEndInitializer() throws IOException {
-        FileWriter fileWriter = new FileWriter("C:/Users/SeongJung/Desktop/STUDY/컴파일러/2016_fall_compiler/week01/src/translator/test.c",true);
+        FileWriter fileWriter = new FileWriter(new File("week01/src/translator/test.c"),true);
         fileWriter.write("\treturn 0;\r\n}");
         fileWriter.close();
     }
 
     public void writeFile(ArrayList<String> parsedStatement) throws IOException {
-        FileWriter fileWriter = new FileWriter("C:/Users/SeongJung/Desktop/STUDY/컴파일러/2016_fall_compiler/week01/src/translator/test.c", true);
+        FileWriter fileWriter = new FileWriter(new File("week01/src/translator/test.c"), true);
         StringBuilder stringBuilder = new StringBuilder();
         switch(parsedStatement.remove(0)) {
             case "def":
