@@ -16,6 +16,10 @@ public class FileManager {
         this.resultId = "";
     }
 
+    /*
+     * Read file test.ad
+     * use BufferReader for line by line reading
+     */
     public ArrayList<String> readFile() throws IOException {
         BufferedReader bufferedReader = new BufferedReader(new FileReader(new File("week01/src/translator/test.ad")));
         ArrayList<String> statementSet = new ArrayList<>();
@@ -29,6 +33,9 @@ public class FileManager {
         return statementSet;
     }
 
+    /*
+     * initialize output file header
+     */
     public void outputfileInitializer() throws IOException {
         FileOutputStream output = new FileOutputStream(new File("week01/src/translator/test.c"));
         output.close();
@@ -38,12 +45,22 @@ public class FileManager {
         fileWriter.close();
     }
 
+    /*
+     * initialize output file footer
+     */
     public void outputfileEndInitializer() throws IOException {
         FileWriter fileWriter = new FileWriter(new File("week01/src/translator/test.c"),true);
         fileWriter.write("\treturn 0;\r\n}");
         fileWriter.close();
     }
 
+    /*
+     * write file according to keyword
+     * keyword def - define list with input elements
+     *         reduce - calculate result with list elements by input operator
+     *         print - list : printing all elements
+     *                 result : printing result value
+     */
     public void writeFile(ArrayList<String> parsedStatement) throws IOException {
         FileWriter fileWriter = new FileWriter(new File("week01/src/translator/test.c"), true);
         StringBuilder stringBuilder = new StringBuilder();

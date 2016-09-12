@@ -15,6 +15,9 @@ public class StatementParser {
         this.statementSet = inputSet;
     }
 
+    /*
+     * Statement parsing by using StringTokenizer
+     */
     public void parser() throws IOException {
         for(int i=0; i < statementSet.size(); i++) {
             StringTokenizer stringTokenizer = new StringTokenizer(statementSet.get(i));
