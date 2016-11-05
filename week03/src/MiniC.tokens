@@ -35,8 +35,8 @@ DecimalConstant=34
 OctalConstant=35
 HexadecimalConstant=36
 WS=37
-'='=1
-';'=2
+';'=1
+'='=2
 '['=3
 ']'=4
 '('=5

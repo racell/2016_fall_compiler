@@ -10,12 +10,12 @@ import java.io.IOException;
  */
 public class TestMiniC {
     public static void main(String[] args) throws IOException{
-        MiniCLexer lexer = new MiniCLexer(new ANTLRFileStream("test"));
+        MiniCLexer lexer = new MiniCLexer(new ANTLRFileStream("week03/src/test"));
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
         MiniCParser parser = new MiniCParser(tokenStream);
         ParseTree tree = parser.program();
 
         ParseTreeWalker walker = new ParseTreeWalker();
-        walker.walk(new MiniCBaseListener(), tree);
+        walker.walk(new MiniCPrintListener(), tree);
     }
 }

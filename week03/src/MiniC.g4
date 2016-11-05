@@ -3,7 +3,8 @@ grammar MiniC;
 program	: decl+			;
 decl		: var_decl		
 		| fun_decl		;
-var_decl	: type_spec IDENT ('=' LITERAL )  ';'	
+var_decl	:  type_spec IDENT ';'
+		| type_spec IDENT '=' LITERAL ';'	
 		| type_spec IDENT '[' LITERAL ']' ';'	;
 type_spec	: VOID				
 		| INT				;
@@ -21,7 +22,8 @@ stmt		: expr_stmt
 expr_stmt	: expr ';'			;
 while_stmt	: WHILE '(' expr ')' stmt	;
 compound_stmt: '{' local_decl* stmt* '}'	;
-local_decl	: type_spec IDENT ';'		
+local_decl	: type_spec IDENT ';'
+		| type_spec IDENT '=' LITERAL ';'	
 		| type_spec IDENT '[' LITERAL ']' ';'	;
 if_stmt		: IF '(' expr ')' stmt		
 		| IF '(' expr ')' stmt ELSE stmt 		;
