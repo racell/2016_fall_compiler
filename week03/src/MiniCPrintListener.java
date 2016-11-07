@@ -6,53 +6,108 @@ import org.antlr.v4.runtime.tree.ParseTreeProperty;
 public class MiniCPrintListener extends MiniCBaseListener {
     private ParseTreeProperty<String> newTexts = new ParseTreeProperty<>();
 
-    @Override public void exitProgram(MiniCParser.ProgramContext ctx) {
+    @Override
+    public void exitProgram(MiniCParser.ProgramContext ctx) {
         for (int i = 0; i < ctx.decl().size(); i++) {
             System.out.println(newTexts.get(ctx.decl(i)));
         }
     }
 
-    @Override public void exitDecl(MiniCParser.DeclContext ctx) {
+    @Override
+    public void exitDecl(MiniCParser.DeclContext ctx) {
 
     }
 
-    @Override public void exitVar_decl(MiniCParser.Var_declContext ctx) {
+    @Override
+    public void exitVar_decl(MiniCParser.Var_declContext ctx) {
 
     }
 
-    @Override public void exitType_spec(MiniCParser.Type_specContext ctx) {
+    @Override
+    public void exitType_spec(MiniCParser.Type_specContext ctx) {
 
     }
 
-    @Override public void exitFun_decl(MiniCParser.Fun_declContext ctx) {
+    @Override
+    public void exitFun_decl(MiniCParser.Fun_declContext ctx) {
 
     }
 
-    @Override public void exitParams(MiniCParser.ParamsContext ctx) {
+    @Override
+    public void exitParams(MiniCParser.ParamsContext ctx) {
 
     }
 
-    @Override public void exitParam(MiniCParser.ParamContext ctx) {
-
+    @Override
+    public void exitParam(MiniCParser.ParamContext ctx) {
+        String type, s1, left, right;
+        type = newTexts.get(ctx.type_spec());
+        s1 = ctx.getChild(1).getText();
+        if (isArrayParam(ctx)) {
+            left = ctx.getChild(2).getText();
+            right = ctx.getChild(3).getText();
+            newTexts.put(ctx, type + " " + s1 + left + " " + right);
+        } else {
+            newTexts.put(ctx, type + " " + s1);
+        }
     }
 
-    @Override public void exitStmt(MiniCParser.StmtContext ctx) {
-
+    @Override
+    public void exitStmt(MiniCParser.StmtContext ctx) {
+        String s1;
+        if (isExprStmt(ctx)) {
+            s1 = newTexts.get(ctx.expr_stmt());
+            newTexts.put(ctx, s1);
+        } else if (isCompoundStmt(ctx)) {
+            s1 = newTexts.get(ctx.compound_stmt());
+            newTexts.put(ctx, s1);
+        } else if (isIfStmt(ctx)) {
+            s1 = newTexts.get(ctx.if_stmt());
+            newTexts.put(ctx, s1);
+        } else if (isWhileStmt(ctx)) {
+            s1 = newTexts.get(ctx.while_stmt());
+            newTexts.put(ctx, s1);
+        } else if (isReturnStmt(ctx)) {
+            s1 = newTexts.get(ctx.return_stmt());
+            newTexts.put(ctx, s1);
+        }
     }
 
-    @Override public void exitExpr_stmt(MiniCParser.Expr_stmtContext ctx) {
-
+    @Override
+    public void exitExpr_stmt(MiniCParser.Expr_stmtContext ctx) {
+        String s1, colon;
+        s1 = newTexts.get(ctx.expr());
+        colon = ctx.getChild(1).getText();
+        newTexts.put(ctx, s1 + colon);
     }
 
-    @Override public void exitWhile_stmt(MiniCParser.While_stmtContext ctx) {
-
+    @Override
+    public void exitWhile_stmt(MiniCParser.While_stmtContext ctx) {
+        String word, left, right, s1, s2;
+        word = ctx.getChild(0).getText();
+        left = ctx.getChild(1).getText();
+        s1 = newTexts.get(ctx.expr());
+        right = ctx.getChild(3).getText();
+        s2 = newTexts.get(ctx.stmt());
+        newTexts.put(ctx, word + left + s1 + right + "\n...." + s2);
     }
 
-    @Override public void exitCompound_stmt(MiniCParser.Compound_stmtContext ctx) {
-        String open, close;
+    @Override
+    public void exitCompound_stmt(MiniCParser.Compound_stmtContext ctx) {
+        String open, close, s1 = "", s2 = "";
+        open = ctx.getChild(0).getText();
+        for (int i = 0; i < ctx.local_decl().size(); i++) {
+            s1 = s1 + "...." + newTexts.get(ctx.local_decl(i)) + "\n";
+        }
+        for (int i = 0; i < ctx.stmt().size(); i++) {
+            s2 = s2 + "...." + newTexts.get(ctx.stmt(i)) + "\n";
+        }
+        close = ctx.getChild(ctx.local_decl().size() + ctx.stmt().size()).getText();
+        newTexts.put(ctx, open + "\n" + s1 + s2 + close);
     }
 
-    @Override public void exitLocal_decl(MiniCParser.Local_declContext ctx) {
+    @Override
+    public void exitLocal_decl(MiniCParser.Local_declContext ctx) {
         String type, s1, eq, colon, s2;
         type = newTexts.get(ctx.type_spec());
         s1 = ctx.getChild(1).getText();
@@ -72,7 +127,8 @@ public class MiniCPrintListener extends MiniCBaseListener {
         }
     }
 
-    @Override public void exitIf_stmt(MiniCParser.If_stmtContext ctx) {
+    @Override
+    public void exitIf_stmt(MiniCParser.If_stmtContext ctx) {
         String word1, word2, s1, s2, s3;
         word1 = ctx.getChild(0).getText() + " " + ctx.getChild(1).getText();
         s1 = newTexts.get(ctx.expr()) + ctx.getChild(3).getText();
@@ -86,7 +142,8 @@ public class MiniCPrintListener extends MiniCBaseListener {
         }
     }
 
-    @Override public void exitReturn_stmt(MiniCParser.Return_stmtContext ctx) {
+    @Override
+    public void exitReturn_stmt(MiniCParser.Return_stmtContext ctx) {
         String s1, s2, colon;
         s1 = ctx.getChild(0).getText();
         colon = ctx.getChild(2).getText();
@@ -98,7 +155,8 @@ public class MiniCPrintListener extends MiniCBaseListener {
         }
     }
 
-    @Override public void exitExpr(MiniCParser.ExprContext ctx) {
+    @Override
+    public void exitExpr(MiniCParser.ExprContext ctx) {
         String s1, s2, s3, op1, op2;
         if (isBinaryOperation(ctx)) {
             s1 = newTexts.get(ctx.expr(0));
@@ -138,7 +196,8 @@ public class MiniCPrintListener extends MiniCBaseListener {
         }
     }
 
-    @Override public void exitArgs(MiniCParser.ArgsContext ctx) {
+    @Override
+    public void exitArgs(MiniCParser.ArgsContext ctx) {
         String s1, op, s2;
         s1 = newTexts.get(ctx.expr(0));
         if (isMultipleExpr(ctx)) {
@@ -149,6 +208,30 @@ public class MiniCPrintListener extends MiniCBaseListener {
             }
         }
         newTexts.put(ctx, s1);
+    }
+
+    private boolean isArrayParam(MiniCParser.ParamContext ctx) {
+        return ctx.getChildCount() == 4;
+    }
+
+    private boolean isReturnStmt(MiniCParser.StmtContext ctx) {
+        return ctx.return_stmt() == ctx.getChild(0);
+    }
+
+    private boolean isWhileStmt(MiniCParser.StmtContext ctx) {
+        return ctx.while_stmt() == ctx.getChild(0);
+    }
+
+    private boolean isIfStmt(MiniCParser.StmtContext ctx) {
+        return ctx.if_stmt() == ctx.getChild(0);
+    }
+
+    private boolean isCompoundStmt(MiniCParser.StmtContext ctx) {
+        return ctx.compound_stmt() == ctx.getChild(0);
+    }
+
+    private boolean isExprStmt(MiniCParser.StmtContext ctx) {
+        return ctx.expr_stmt() == ctx.getChild(0);
     }
 
     private boolean hasReturnExpr(MiniCParser.Return_stmtContext ctx) {
