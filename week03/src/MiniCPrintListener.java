@@ -1,5 +1,7 @@
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 
+import java.util.StringTokenizer;
+
 /**
  * Created by SeongJung on 2016-11-03.
  */
@@ -15,27 +17,69 @@ public class MiniCPrintListener extends MiniCBaseListener {
 
     @Override
     public void exitDecl(MiniCParser.DeclContext ctx) {
-
+        if (isVarDecl(ctx)) {
+            newTexts.put(ctx, newTexts.get(ctx.var_decl()));
+        } else if (isFunDecl(ctx)) {
+            newTexts.put(ctx, newTexts.get(ctx.fun_decl()));
+        }
     }
 
     @Override
     public void exitVar_decl(MiniCParser.Var_declContext ctx) {
-
+        String type, s1, eq, colon, s2;
+        type = newTexts.get(ctx.type_spec());
+        s1 = ctx.getChild(1).getText();
+        if (isDeclaration(ctx)) {
+            colon = ctx.getChild(2).getText();
+            newTexts.put(ctx, type + " " + s1 + colon);
+        } else if (isDeclarationAndDefine(ctx)) {
+            eq = ctx.getChild(2).getText();
+            s2 = ctx.getChild(3).getText();
+            colon = ctx.getChild(4).getText();
+            newTexts.put(ctx, type + " " + s1 + " " + eq + " " + s2 + colon);
+        } else if (isArrayDeclaration(ctx)) {
+            eq = ctx.getChild(2).getText();
+            s2 = ctx.getChild(3).getText() + ctx.getChild(4).getText();
+            colon = ctx.getChild(5).getText();
+            newTexts.put(ctx, type + " " + s1 + eq + s2 + colon);
+        }
     }
 
     @Override
     public void exitType_spec(MiniCParser.Type_specContext ctx) {
-
+        newTexts.put(ctx, ctx.getChild(0).getText());
     }
 
     @Override
     public void exitFun_decl(MiniCParser.Fun_declContext ctx) {
-
+        String type, s1, left, s2, right, s3;
+        type = newTexts.get(ctx.type_spec());
+        s1 = ctx.getChild(1).getText();
+        left = ctx.getChild(2).getText();
+        s2 = newTexts.get(ctx.params());
+        right = ctx.getChild(4).getText();
+        s3 = newTexts.get(ctx.compound_stmt());
+        newTexts.put(ctx, type + " " + s1 + left + s2 + right + "\n" + s3);
     }
 
     @Override
     public void exitParams(MiniCParser.ParamsContext ctx) {
-
+        String s1, type;
+        if (isEmptyParams(ctx)) {
+            newTexts.put(ctx, "");
+        } else if (isVoidParams(ctx)) {
+            type = ctx.getChild(0).getText();
+            newTexts.put(ctx, type);
+        } else if (isOneParams(ctx)) {
+            s1 = newTexts.get(ctx.param(0));
+            newTexts.put(ctx, s1);
+        } else if (isMultipleParams(ctx)) {
+            s1 = newTexts.get(ctx.param(0));
+            for (int i = 1; i < ctx.param().size(); i++) {
+                s1 = s1 + ", " + newTexts.get(ctx.param(i));
+            }
+            newTexts.put(ctx, s1);
+        }
     }
 
     @Override
@@ -46,7 +90,7 @@ public class MiniCPrintListener extends MiniCBaseListener {
         if (isArrayParam(ctx)) {
             left = ctx.getChild(2).getText();
             right = ctx.getChild(3).getText();
-            newTexts.put(ctx, type + " " + s1 + left + " " + right);
+            newTexts.put(ctx, type + " " + s1 + left + right);
         } else {
             newTexts.put(ctx, type + " " + s1);
         }
@@ -89,7 +133,10 @@ public class MiniCPrintListener extends MiniCBaseListener {
         s1 = newTexts.get(ctx.expr());
         right = ctx.getChild(3).getText();
         s2 = newTexts.get(ctx.stmt());
-        newTexts.put(ctx, word + left + s1 + right + "\n...." + s2);
+        if (newTexts.get(ctx.stmt().compound_stmt()) == null) {
+            s2 = "{\n...." + s2 + "\n}";
+        }
+        newTexts.put(ctx, word + " " + left + s1 + right + "\n" + s2);
     }
 
     @Override
@@ -99,10 +146,16 @@ public class MiniCPrintListener extends MiniCBaseListener {
         for (int i = 0; i < ctx.local_decl().size(); i++) {
             s1 = s1 + "...." + newTexts.get(ctx.local_decl(i)) + "\n";
         }
-        for (int i = 0; i < ctx.stmt().size(); i++) {
-            s2 = s2 + "...." + newTexts.get(ctx.stmt(i)) + "\n";
+        if (ctx.local_decl().size() != 0) {
+            s1 = s1 + "\n";
         }
-        close = ctx.getChild(ctx.local_decl().size() + ctx.stmt().size()).getText();
+        for (int i = 0; i < ctx.stmt().size(); i++) {
+            StringTokenizer stringTokenizer = new StringTokenizer(newTexts.get(ctx.stmt(i)), "\n");
+            while (stringTokenizer.hasMoreTokens()) {
+                s2 = s2 + "...." + stringTokenizer.nextToken() + "\n";
+            }
+        }
+        close = ctx.getChild(ctx.local_decl().size() + ctx.stmt().size() + 1).getText();
         newTexts.put(ctx, open + "\n" + s1 + s2 + close);
     }
 
@@ -111,18 +164,18 @@ public class MiniCPrintListener extends MiniCBaseListener {
         String type, s1, eq, colon, s2;
         type = newTexts.get(ctx.type_spec());
         s1 = ctx.getChild(1).getText();
-        if (ctx.getChildCount() == 3) {
+        if (isDeclaration(ctx)) {
             colon = ctx.getChild(2).getText();
             newTexts.put(ctx, type + " " + s1 + colon);
-        } else if (ctx.getChildCount() == 5) {
-            eq = ctx.getChild(3).getText();
-            s2 = ctx.getChild(4).getText();
-            colon = ctx.getChild(5).getText();
+        } else if (isDeclarationAndDefine(ctx)) {
+            eq = ctx.getChild(2).getText();
+            s2 = ctx.getChild(3).getText();
+            colon = ctx.getChild(4).getText();
             newTexts.put(ctx, type + " " + s1 + " " + eq + " " + s2 + colon);
-        } else {
-            eq = ctx.getChild(3).getText();
-            s2 = ctx.getChild(4).getText() + ctx.getChild(5).getText();
-            colon = ctx.getChild(6).getText();
+        } else if (isArrayDeclaration(ctx)) {
+            eq = ctx.getChild(2).getText();
+            s2 = ctx.getChild(3).getText() + ctx.getChild(4).getText();
+            colon = ctx.getChild(5).getText();
             newTexts.put(ctx, type + " " + s1 + eq + s2 + colon);
         }
     }
@@ -133,12 +186,18 @@ public class MiniCPrintListener extends MiniCBaseListener {
         word1 = ctx.getChild(0).getText() + " " + ctx.getChild(1).getText();
         s1 = newTexts.get(ctx.expr()) + ctx.getChild(3).getText();
         s2 = newTexts.get(ctx.stmt(0));
+        if (newTexts.get(ctx.stmt(0).compound_stmt()) == null) {
+            s2 = "{\n...." + s2 + "\n}";
+        }
         if (ctx.getChildCount() == 7) {
             word2 = ctx.getChild(5).getText();
             s3 = newTexts.get(ctx.stmt(1));
-            newTexts.put(ctx, word1 + s1 + "\n...." + s2 + "\n" + word2 + "\n...." + s3);
+            if (newTexts.get(ctx.stmt(1).compound_stmt()) == null) {
+                s3 = "{\n...." + s3 + "\n}";
+            }
+            newTexts.put(ctx, word1 + s1 + "\n" + s2 + "\n" + word2 + "\n" + s3);
         } else {
-            newTexts.put(ctx, word1 + s1 + "\n...." + s2);
+            newTexts.put(ctx, word1 + s1 + "\n" + s2);
         }
     }
 
@@ -159,12 +218,19 @@ public class MiniCPrintListener extends MiniCBaseListener {
     public void exitExpr(MiniCParser.ExprContext ctx) {
         String s1, s2, s3, op1, op2;
         if (isBinaryOperation(ctx)) {
-            s1 = newTexts.get(ctx.expr(0));
-            s2 = newTexts.get(ctx.expr(1));
-            op1 = ctx.getChild(1).getText();
-            newTexts.put(ctx, s1 + " " + op1 + " " + s2);
+            if (ctx.getChild(0) != ctx.expr(0)) {
+                s1 = ctx.getChild(0).getText();
+                s2 = newTexts.get(ctx.expr(0));
+                op1 = ctx.getChild(1).getText();
+                newTexts.put(ctx, s1 + " " + op1 + " " + s2);
+            } else {
+                s1 = newTexts.get(ctx.expr(0));
+                s2 = newTexts.get(ctx.expr(1));
+                op1 = ctx.getChild(1).getText();
+                newTexts.put(ctx, s1 + " " + op1 + " " + s2);
+            }
         } else if (isPrefixOperation(ctx)) {
-            op1 = ctx.getChild(1).getText();
+            op1 = ctx.getChild(0).getText();
             s1 = newTexts.get(ctx.expr(0));
             newTexts.put(ctx, op1 + s1);
         } else if (isParentheses(ctx)) {
@@ -173,23 +239,23 @@ public class MiniCPrintListener extends MiniCBaseListener {
             s1 = newTexts.get(ctx.expr(1));
             newTexts.put(ctx, op1 + s1 + op2);
         } else if (ctx.getChildCount() == 1) {
-            newTexts.put(ctx, ctx.getChild(0).getText());
+            newTexts.put(ctx, ctx.getText());
         } else if (isArray(ctx)) {
-            s1 = newTexts.get(ctx.expr(0));
+            s1 = ctx.getChild(0).getText();
             s2 = newTexts.get(ctx.expr(0));
             op1 = ctx.getChild(1).getText();
             op2 = ctx.getChild(3).getText();
             newTexts.put(ctx, s1 + op1 + s2 + op2);
         } else if (isFunction(ctx)) {
-            s1 = newTexts.get(ctx.expr(0));
+            s1 = ctx.getChild(0).getText();
             s2 = newTexts.get(ctx.args());
             op1 = ctx.getChild(1).getText();
             op2 = ctx.getChild(3).getText();
             newTexts.put(ctx, s1 + op1 + s2 + op2);
-        } else {
-            s1 = newTexts.get(ctx.expr(0));
-            s2 = newTexts.get(ctx.expr(1));
-            s3 = newTexts.get(ctx.expr(2));
+        } else if (ctx.getChildCount() == 6) {
+            s1 = ctx.getChild(0).getText();
+            s2 = newTexts.get(ctx.expr(0));
+            s3 = newTexts.get(ctx.expr(1));
             op1 = ctx.getChild(1).getText();
             op2 = ctx.getChild(3).getText() + " " + ctx.getChild(4).getText();
             newTexts.put(ctx, s1 + op1 + s2 + op2 + " " + s3);
@@ -199,15 +265,55 @@ public class MiniCPrintListener extends MiniCBaseListener {
     @Override
     public void exitArgs(MiniCParser.ArgsContext ctx) {
         String s1, op, s2;
-        s1 = newTexts.get(ctx.expr(0));
-        if (isMultipleExpr(ctx)) {
-            for (int i = 1; i < ctx.expr().size(); i++) {
-                op = ctx.getChild(1).getText();
-                s2 = newTexts.get(ctx.expr(i));
-                s1 = s1 + op + " " + s2;
+        if (isEmptyArgs(ctx)) {
+            newTexts.put(ctx, "");
+        } else {
+            s1 = newTexts.get(ctx.expr(0));
+            if (isMultipleExpr(ctx)) {
+                for (int i = 1; i < ctx.expr().size(); i++) {
+                    op = ctx.getChild(1).getText();
+                    s2 = newTexts.get(ctx.expr(i));
+                    s1 = s1 + op + " " + s2;
+                }
             }
+            newTexts.put(ctx, s1);
         }
-        newTexts.put(ctx, s1);
+    }
+
+    private boolean isVarDecl(MiniCParser.DeclContext ctx) {
+        return ctx.var_decl() == ctx.getChild(0);
+    }
+
+    private boolean isFunDecl(MiniCParser.DeclContext ctx) {
+        return ctx.fun_decl() == ctx.getChild(0);
+    }
+
+    private boolean isDeclaration(MiniCParser.Var_declContext ctx) {
+        return ctx.getChildCount() == 3;
+    }
+
+    private boolean isDeclarationAndDefine(MiniCParser.Var_declContext ctx) {
+        return ctx.getChildCount() == 5;
+    }
+
+    private boolean isArrayDeclaration(MiniCParser.Var_declContext ctx) {
+        return ctx.getChildCount() == 6;
+    }
+
+    private boolean isEmptyParams(MiniCParser.ParamsContext ctx) {
+        return ctx.getChildCount() == 0;
+    }
+
+    private boolean isVoidParams(MiniCParser.ParamsContext ctx) {
+        return ctx.getChildCount() == 1 && ctx.param() == null;
+    }
+
+    private boolean isMultipleParams(MiniCParser.ParamsContext ctx) {
+        return ctx.getChildCount() > 1;
+    }
+
+    private boolean isOneParams(MiniCParser.ParamsContext ctx) {
+        return ctx.getChildCount() == 1 && ctx.param() != null;
     }
 
     private boolean isArrayParam(MiniCParser.ParamContext ctx) {
@@ -234,6 +340,18 @@ public class MiniCPrintListener extends MiniCBaseListener {
         return ctx.expr_stmt() == ctx.getChild(0);
     }
 
+    private boolean isDeclaration(MiniCParser.Local_declContext ctx) {
+        return ctx.getChildCount() == 3;
+    }
+
+    private boolean isDeclarationAndDefine(MiniCParser.Local_declContext ctx) {
+        return ctx.getChildCount() == 5;
+    }
+
+    private boolean isArrayDeclaration(MiniCParser.Local_declContext ctx) {
+        return ctx.getChildCount() == 6;
+    }
+
     private boolean hasReturnExpr(MiniCParser.Return_stmtContext ctx) {
         return ctx.getChildCount() == 3;
     }
@@ -251,14 +369,18 @@ public class MiniCPrintListener extends MiniCBaseListener {
     }
 
     private boolean isFunction(MiniCParser.ExprContext ctx) {
-        return ctx.getChildCount() != 1 && ctx.expr().isEmpty();
+        return ctx.getChildCount() == 4 && ctx.args() == ctx.getChild(2);
     }
 
     private boolean isArray(MiniCParser.ExprContext ctx) {
-        return ctx.getChildCount() != 1 && !ctx.expr().isEmpty();
+        return ctx.getChildCount() == 4 && ctx.expr(0) == ctx.getChild(2);
     }
 
     private boolean isMultipleExpr(MiniCParser.ArgsContext ctx) {
         return ctx.expr().size() != 1;
+    }
+
+    private boolean isEmptyArgs(MiniCParser.ArgsContext ctx) {
+        return ctx.getChildCount() == 0;
     }
 }

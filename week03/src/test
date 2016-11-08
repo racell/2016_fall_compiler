@@ -1,19 +1,19 @@
 int max=500; void main(){
 int i; int j; int k;
-int rem; int sum;
+int rem[4]; int sum;
 i = 2;
-while(i <= max) {
+while(i          <= max) {
 sum = 0;
 k = i / 2;
 j = i;
-while ( j <= k) {
+while ( j     <=              k) {
 rem = i % j;
-if (rem == 0) {
-sum = sum + j;
+if (rem           == 0) {
+sum =            sum + j;
 ++j;
 }
 }
-if (i == sum) write(i,i);
-++i;
+if          (i == sum) write(i);
+        ++i;
 }
 }
