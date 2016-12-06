@@ -45,6 +45,7 @@ public class MiniCPrintListener extends MiniCBaseListener {
         }
     }
 
+
     @Override
     public void exitType_spec(MiniCParser.Type_specContext ctx) {
         newTexts.put(ctx, ctx.getChild(0).getText());
