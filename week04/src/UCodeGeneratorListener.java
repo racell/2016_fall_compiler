@@ -70,7 +70,7 @@ public class UCodeGeneratorListener extends MiniCBaseListener {
         s2 = newTexts.get(ctx.params());
         s3 = newTexts.get(ctx.compound_stmt());
         newTexts.put(ctx,  s1 + blank.substring(0, blank.length() - s1.length()) + "proc " + localVarOffset + " 2 2" + s2 + "\n" +
-                s3 + blank + "end");
+                s3 + "\n" + blank + "end");
         localVarOffset = 0;
     }
 
@@ -143,7 +143,7 @@ public class UCodeGeneratorListener extends MiniCBaseListener {
         newTexts.put(ctx, "$$" + label + blank.substring(0, blank.length() - 2 - Integer.toString(label).length()) + "nop" + "\n" +
                 s1 + "\n" +
                 blank + "fjp $$" + (label + 1) + "\n" +
-                s2 +
+                s2  + "\n" +
                 blank + "ujp $$" + label + "\n" +
                 "$$" + (label + 1) + blank.substring(0, blank.length() - 2 - Integer.toString(label).length()) + "nop");
         label++;
@@ -158,7 +158,7 @@ public class UCodeGeneratorListener extends MiniCBaseListener {
         for (int i = 0; i < ctx.stmt().size(); i++) {
             s2 += newTexts.get(ctx.stmt(i)) + "\n";
         }
-        newTexts.put(ctx, s1 + s2);
+        newTexts.put(ctx, s1 + s2.substring(0, s2.length()-1));
     }
 
     @Override
