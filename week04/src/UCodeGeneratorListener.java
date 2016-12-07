@@ -1,8 +1,11 @@
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Created by SeongJung on 2016-11-29.
@@ -15,22 +18,30 @@ public class UCodeGeneratorListener extends MiniCBaseListener {
     private HashMap<String, String> externalMap = new HashMap<>();
     private int localVarOffset = 0;
     private int externalVarOffset = 0;
-    private List<String> externalVarDecl = new LinkedList<>();
+    private LinkedList<String> externalVarDecl = new LinkedList<>();
 
     @Override
-    public void exitProgram(MiniCParser.ProgramContext ctx) {
-        for (int i = 0; i < ctx.decl().size(); i++) {
-            System.out.println(newTexts.get(ctx.decl(i)));
-        }
-        System.out.println(blank + "bgn " + externalMap.size());
-        if (externalMap.size() != 0) {
-            for (int i = 0; i < externalVarDecl.size(); i++) {
-                System.out.println(externalVarDecl.get(i));
+    public void exitProgram(MiniCParser.ProgramContext ctx){
+        try {
+            FileOutputStream fileOutputStream = new FileOutputStream(new File("week04/src/generated_ucode.txt"));
+            fileOutputStream.close();
+            PrintWriter printWriter = new PrintWriter(new File("week04/src/generated_ucode.txt"));
+            for (int i = 0; i < ctx.decl().size(); i++) {
+                printWriter.println(newTexts.get(ctx.decl(i)));
             }
+            printWriter.println(blank + "bgn " + externalMap.size());
+            if (externalMap.size() != 0) {
+                for (int i = 0; i < externalVarDecl.size(); i++) {
+                    printWriter.println(externalVarDecl.get(i));
+                }
+            }
+            printWriter.println(blank + "ldp");
+            printWriter.println(blank + "call main");
+            printWriter.println(blank + "end");
+            printWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        System.out.println(blank + "ldp");
-        System.out.println(blank + "call main");
-        System.out.println(blank + "end");
     }
 
     @Override
