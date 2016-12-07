@@ -55,7 +55,7 @@ public class UCodeGeneratorListener extends MiniCBaseListener {
 
     @Override
     public void exitVar_decl(MiniCParser.Var_declContext ctx) {
-        String s1;
+        String s1, s2;
         s1 = ctx.getChild(1).getText();
         if (isDeclaration(ctx)) {
             externalMap.put(s1, "1 " + ++externalVarOffset);
@@ -65,9 +65,10 @@ public class UCodeGeneratorListener extends MiniCBaseListener {
             newTexts.put(ctx, blank + "sym " + externalMap.get(s1) + " 1");
             externalVarDecl.add(blank + "ldc " + ctx.getChild(3).getText() + "\n" + blank + "str " + externalMap.get(s1));
         } else if (isArrayDeclaration(ctx)) {
-            externalMap.put(s1, "1 " + ++externalVarOffset);
+            externalMap.put(s1, "1 " + ++externalVarOffset + "l");
             externalVarOffset += Integer.parseInt(ctx.getChild(3).getText()) - 1;
-            newTexts.put(ctx, blank + "sym " + externalMap.get(s1) + " " + ctx.getChild(3).getText());
+            s2 = externalMap.get(s1);
+            newTexts.put(ctx, blank + "sym " + s2.substring(0, s2.length() - 1) + " " + ctx.getChild(3).getText());
         }
     }
 
@@ -82,7 +83,7 @@ public class UCodeGeneratorListener extends MiniCBaseListener {
         s1 = ctx.getChild(1).getText();
         s2 = newTexts.get(ctx.params());
         s3 = newTexts.get(ctx.compound_stmt());
-        newTexts.put(ctx,  s1 + blank.substring(0, blank.length() - s1.length()) + "proc " + localVarOffset + " 2 2" + s2 + "\n" +
+        newTexts.put(ctx,  s1 + blank.substring(0, blank.length() - s1.length()) + "proc " + localVarOffset + " 2 2\n" + s2 +
                 s3 + "\n" + blank + "end");
         localVarOffset = 0;
     }
@@ -95,10 +96,10 @@ public class UCodeGeneratorListener extends MiniCBaseListener {
         } else if (isVoidParams(ctx)) {
             newTexts.put(ctx, "");
         } else if (isOneParams(ctx)) {
-            s1 = newTexts.get(ctx.param(0));
+            s1 = newTexts.get(ctx.param(0)) + "\n";
             newTexts.put(ctx, s1);
         } else if (isMultipleParams(ctx)) {
-            s1 = newTexts.get(ctx.param(0));
+            s1 = newTexts.get(ctx.param(0)) + "\n";
             for (int i = 1; i < ctx.param().size(); i++) {
                 s1 += newTexts.get(ctx.param(i)) + "\n";
             }
@@ -108,12 +109,12 @@ public class UCodeGeneratorListener extends MiniCBaseListener {
 
     @Override
     public void exitParam(MiniCParser.ParamContext ctx) {
-        String s1;
+        String s1, s2;
         s1 = ctx.getChild(1).getText();
         if (isArrayParam(ctx)) {
-            localMap.put(s1, "2 " + ++localVarOffset);
-            localVarOffset += Integer.parseInt(ctx.getChild(3).getText()) - 1;
-            newTexts.put(ctx, blank + "sym " + localMap.get(s1) + ctx.getChild(3).getText());
+            localMap.put(s1, "2 " + ++localVarOffset + "p");
+            s2 = localMap.get(s1);
+            newTexts.put(ctx, blank + "sym " + s2.substring(0, s2.length() - 1) + " 1");
         } else {
             localMap.put(s1, "2 " + ++localVarOffset);
             newTexts.put(ctx, blank + "sym " + localMap.get(s1) + " 1");
@@ -176,7 +177,7 @@ public class UCodeGeneratorListener extends MiniCBaseListener {
 
     @Override
     public void exitLocal_decl(MiniCParser.Local_declContext ctx) {
-        String s1;
+        String s1, s2;
         s1 = ctx.getChild(1).getText();
         if (isDeclaration(ctx)) {
             localMap.put(s1, "2 " + ++localVarOffset);
@@ -185,9 +186,10 @@ public class UCodeGeneratorListener extends MiniCBaseListener {
             localMap.put(s1, "2 " + ++localVarOffset);
             newTexts.put(ctx, blank + "sym " + localMap.get(s1) + " 1\n" + blank + "ldc " + ctx.getChild(3).getText() + "\n" + blank + "str " + localMap.get(s1));
         } else if (isArrayDeclaration(ctx)) {
-            localMap.put(s1, "2 " + ++localVarOffset);
+            localMap.put(s1, "2 " + ++localVarOffset + "l");
             localVarOffset += Integer.parseInt(ctx.getChild(3).getText()) - 1;
-            newTexts.put(ctx, blank + "sym " + localMap.get(s1) + ctx.getChild(3).getText());
+            s2 = localMap.get(s1);
+            newTexts.put(ctx, blank + "sym " + s2.substring(0, s2.length() - 1) + ctx.getChild(3).getText());
         }
     }
 
@@ -198,10 +200,14 @@ public class UCodeGeneratorListener extends MiniCBaseListener {
         s2 = newTexts.get(ctx.stmt(0));
         if (ctx.getChildCount() == 7) {
             s3 = newTexts.get(ctx.stmt(1));
-            newTexts.put(ctx, s1 + "\n" + blank + "fjp $$" + label + "\n" + s2 + "\n$$" + label + blank.substring(0, blank.length() - 2 - Integer.toString(label).length()) + "nop\n" + s3);
+            newTexts.put(ctx, s1 + "\n" +
+                    blank + "fjp $$" + label + "\n" +
+                    s2 + "\n$$" + label + blank.substring(0, blank.length() - 2 - Integer.toString(label).length()) + "nop\n" + s3);
             label++;
         } else {
-            newTexts.put(ctx, s1 + "\n" + blank + "fjp $$" + label + "\n" + s2 + "\n$$" + label + blank.substring(0, blank.length() - 2 - Integer.toString(label).length()) + "nop");
+            newTexts.put(ctx, s1 + "\n" +
+                    blank + "fjp $$" + label + "\n" +
+                    s2 + "\n$$" + label + blank.substring(0, blank.length() - 2 - Integer.toString(label).length()) + "nop");
             label++;
         }
     }
@@ -247,7 +253,11 @@ public class UCodeGeneratorListener extends MiniCBaseListener {
         } else if (isIdentOrLiteral(ctx)) {
             if (ctx.getChild(0) == ctx.IDENT()) {
                 s1 = (localMap.get(ctx.getChild(0).getText()) != null) ? localMap.get(ctx.getChild(0).getText()) : externalMap.get(ctx.getChild(0).getText());
-                newTexts.put(ctx, blank + "lod " + s1);
+                if (s1.substring(s1.length()-1).equals("l")) {
+                    newTexts.put(ctx, blank + "lda " + s1.substring(0, s1.length()-1));
+                } else {
+                    newTexts.put(ctx, blank + "lod " + s1);
+                }
             } else {
                 s1 = ctx.getChild(0).getText();
                 newTexts.put(ctx, blank + "ldc " + s1);
@@ -255,7 +265,11 @@ public class UCodeGeneratorListener extends MiniCBaseListener {
         } else if (isArray(ctx)) {
             s1 = (localMap.get(ctx.getChild(0).getText()) != null) ? localMap.get(ctx.getChild(0).getText()) : externalMap.get(ctx.getChild(0).getText());
             s2 = newTexts.get(ctx.expr(0));
-            newTexts.put(ctx, s2 + "\n" + blank + "lda " + s1 + "\n" + blank + "add\n" + blank + "ldi");
+            if (s1.substring(s1.length()-1).equals("l")) {
+                newTexts.put(ctx, s2 + "\n" + blank + "lda " + s1.substring(0, s1.length()-1) + "\n" + blank + "add\n" + blank + "ldi");
+            } else if (s1.substring(s1.length()-1).equals("p")) {
+                newTexts.put(ctx, s2 + "\n" + blank + "lod " + s1.substring(0, s1.length()-1) + "\n" + blank + "add\n" + blank + "ldi");
+            }
         } else if (isFunction(ctx)) {
             s1 = ctx.getChild(0).getText();
             s2 = newTexts.get(ctx.args());
@@ -268,7 +282,11 @@ public class UCodeGeneratorListener extends MiniCBaseListener {
             s1 = (localMap.get(ctx.getChild(0).getText()) != null) ? localMap.get(ctx.getChild(0).getText()) : externalMap.get(ctx.getChild(0).getText());
             s2 = newTexts.get(ctx.expr(0));
             s3 = newTexts.get(ctx.expr(1));
-            newTexts.put(ctx, s2 + "\n" + blank + "lda " + s1 + "\n" + blank + "add\n" + s3 + "\n" + blank + "sti");
+            if (s1.substring(s1.length()-1).equals("l")) {
+                newTexts.put(ctx, s2 + "\n" + blank + "lda " + s1.substring(0, s1.length()-1) + "\n" + blank + "add\n" + s3 + "\n" + blank + "sti");
+            } else if (s1.substring(s1.length()-1).equals("p")) {
+                newTexts.put(ctx, s2 + "\n" + blank + "lod " + s1.substring(0, s1.length()-1) + "\n" + blank + "add\n" + s3 + "\n" + blank + "sti");
+            }
         }
     }
 
@@ -278,13 +296,13 @@ public class UCodeGeneratorListener extends MiniCBaseListener {
         if (isEmptyArgs(ctx)) {
             newTexts.put(ctx, "");
         } else {
-            s1 = newTexts.get(ctx.expr(0));
+            s1 = newTexts.get(ctx.expr(0)) + "\n";
             if (isMultipleExpr(ctx)) {
                 for (int i = 1; i < ctx.expr().size(); i++) {
                     s1 += newTexts.get(ctx.expr(i)) + "\n";
                 }
             }
-            newTexts.put(ctx, s1);
+            newTexts.put(ctx, s1.substring(0, s1.length()-1));
         }
     }
 
