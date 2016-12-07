@@ -255,11 +255,11 @@ public class UCodeGeneratorListener extends MiniCBaseListener {
         } else if (isArray(ctx)) {
             s1 = (localMap.get(ctx.getChild(0).getText()) != null) ? localMap.get(ctx.getChild(0).getText()) : externalMap.get(ctx.getChild(0).getText());
             s2 = newTexts.get(ctx.expr(0));
-            newTexts.put(ctx, s2 + "\n" + blank + "lda " + s1);
+            newTexts.put(ctx, s2 + "\n" + blank + "lda " + s1 + "\n" + blank + "add\n" + blank + "ldi");
         } else if (isFunction(ctx)) {
             s1 = ctx.getChild(0).getText();
             s2 = newTexts.get(ctx.args());
-            newTexts.put(ctx, s2 + "\n" + blank + "call " + s1);
+            newTexts.put(ctx, blank + "ldp\n" + s2 + "\n" + blank + "call " + s1);
         } else if (ctx.getChildCount() == 6) {
             s1 = (localMap.get(ctx.getChild(0).getText()) != null) ? localMap.get(ctx.getChild(0).getText()) : externalMap.get(ctx.getChild(0).getText());
             s2 = newTexts.get(ctx.expr(0));

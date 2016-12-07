@@ -7,22 +7,26 @@ void main(){
     int k;
     int rem;
     int sum;
+    int o;
     i = 2;
     a = 8;
     list[3] = 5;
+    o = list[3];
     while(i <= 500) {
         sum = 0;
         k = i/2;
-        j = i;
+        j = 1;
         while ( j <= k) {
             rem = i%j;
             if (rem == 0) {
                 sum = sum + j;
-                ++j;
             }
+            ++j;
         }
-        if (i == sum)
-            write(i);
+        if (i == sum) write(i);
         ++ i;
     }
+    write(o);
+    write(a);
+    write(list[3]);
 }
