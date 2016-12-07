@@ -1,3 +1,6 @@
+int a = 1;
+int b = 100;
+int list[10];
 void main(){
     int i;
     int j;
@@ -5,6 +8,8 @@ void main(){
     int rem;
     int sum;
     i = 2;
+    a = 8;
+    list[3] = 5;
     while(i <= 500) {
         sum = 0;
         k = i/2;
