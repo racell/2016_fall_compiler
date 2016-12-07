@@ -31,8 +31,8 @@ public class UCodeGeneratorListener extends MiniCBaseListener {
             }
             printWriter.println(blank + "bgn " + externalMap.size());
             if (externalMap.size() != 0) {
-                for (int i = 0; i < externalVarDecl.size(); i++) {
-                    printWriter.println(externalVarDecl.get(i));
+                for (String vardecl : externalVarDecl) {
+                    printWriter.println(vardecl);
                 }
             }
             printWriter.println(blank + "ldp");
@@ -150,7 +150,7 @@ public class UCodeGeneratorListener extends MiniCBaseListener {
 
     @Override
     public void exitWhile_stmt(MiniCParser.While_stmtContext ctx) {
-        String word, s1, s2;
+        String s1, s2;
         s1 = newTexts.get(ctx.expr());
         s2 = newTexts.get(ctx.stmt());
         newTexts.put(ctx, "$$" + label + blank.substring(0, blank.length() - 2 - Integer.toString(label).length()) + "nop" + "\n" +
