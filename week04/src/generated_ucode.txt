@@ -8,7 +8,8 @@ main       proc 6 2 2
            sym 2 4 1
            sym 2 5 1
            sym 2 6 1
-           ldc 2
+           ldp
+           call test
            str 2 1
            ldc 8
            str 1 1
@@ -83,6 +84,13 @@ $$5        nop
            add
            ldi
            call write
+           end
+test       proc 1 2 2
+           sym 2 1 1
+           ldc 2
+           str 2 1
+           lod 2 1
+           retv
            end
            bgn 3
            ldc 1

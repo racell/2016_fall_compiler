@@ -63,7 +63,7 @@ public class UCodeGeneratorListener extends MiniCBaseListener {
         } else if (isDeclarationAndDefine(ctx)) {
             externalMap.put(s1, "1 " + ++externalVarOffset);
             newTexts.put(ctx, blank + "sym " + externalMap.get(s1) + " 1");
-            externalVarDecl.add(blank + "ldc " + ctx.getChild(3).getText() + "\n" + blank +"str " + externalMap.get(s1));
+            externalVarDecl.add(blank + "ldc " + ctx.getChild(3).getText() + "\n" + blank + "str " + externalMap.get(s1));
         } else if (isArrayDeclaration(ctx)) {
             externalMap.put(s1, "1 " + ++externalVarOffset);
             externalVarOffset += Integer.parseInt(ctx.getChild(3).getText()) - 1;
@@ -183,7 +183,7 @@ public class UCodeGeneratorListener extends MiniCBaseListener {
             newTexts.put(ctx, blank + "sym " + localMap.get(s1) + " 1");
         } else if (isDeclarationAndDefine(ctx)) {
             localMap.put(s1, "2 " + ++localVarOffset);
-            newTexts.put(ctx, blank + "sym " + localMap.get(s1) + " 1\nldc " + ctx.getChild(3).getText() + "\nstr " + localMap.get(s1));
+            newTexts.put(ctx, blank + "sym " + localMap.get(s1) + " 1\n" + blank + "ldc " + ctx.getChild(3).getText() + "\n" + blank + "str " + localMap.get(s1));
         } else if (isArrayDeclaration(ctx)) {
             localMap.put(s1, "2 " + ++localVarOffset);
             localVarOffset += Integer.parseInt(ctx.getChild(3).getText()) - 1;
@@ -211,7 +211,7 @@ public class UCodeGeneratorListener extends MiniCBaseListener {
         String s1;
         if (hasReturnExpr(ctx)) {
             s1 = newTexts.get(ctx.expr());
-            newTexts.put(ctx, blank + s1 + "\n" + blank + "retv");
+            newTexts.put(ctx, s1 + "\n" + blank + "retv");
         } else {
             newTexts.put(ctx, blank + "ret");
         }
@@ -259,7 +259,11 @@ public class UCodeGeneratorListener extends MiniCBaseListener {
         } else if (isFunction(ctx)) {
             s1 = ctx.getChild(0).getText();
             s2 = newTexts.get(ctx.args());
-            newTexts.put(ctx, blank + "ldp\n" + s2 + "\n" + blank + "call " + s1);
+            if (ctx.args().getChildCount() != 0) {
+                newTexts.put(ctx, blank + "ldp\n" + s2 + "\n" + blank + "call " + s1);
+            } else {
+                newTexts.put(ctx, blank + "ldp\n" + blank + "call " + s1);
+            }
         } else if (ctx.getChildCount() == 6) {
             s1 = (localMap.get(ctx.getChild(0).getText()) != null) ? localMap.get(ctx.getChild(0).getText()) : externalMap.get(ctx.getChild(0).getText());
             s2 = newTexts.get(ctx.expr(0));
