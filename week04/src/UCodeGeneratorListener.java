@@ -21,7 +21,7 @@ public class UCodeGeneratorListener extends MiniCBaseListener {
     private LinkedList<String> externalVarDecl = new LinkedList<>();
 
     @Override
-    public void exitProgram(MiniCParser.ProgramContext ctx){
+    public void exitProgram(MiniCParser.ProgramContext ctx) {
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(new File("week04/src/generated_ucode.txt"));
             fileOutputStream.close();
